@@ -1,0 +1,57 @@
+{
+ "actions": [],
+ "creation": "2022-02-18 03:33:53.496858",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "vch_series",
+  "sales_out_series",
+  "column_break_3",
+  "sales_in_series"
+ ],
+ "fields": [
+  {
+   "fieldname": "vch_series",
+   "fieldtype": "Section Break",
+   "label": "Series Panel"
+  },
+  {
+   "description": " \"MM-VCH-.YYYY.-\"",
+   "fieldname": "sales_out_series",
+   "fieldtype": "Data",
+   "label": "Sales Out Series"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "\"MM-RET-.YYYY.-\"",
+   "fieldname": "sales_in_series",
+   "fieldtype": "Data",
+   "label": "Sales In Series"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2022-02-19 04:57:34.494763",
+ "modified_by": "Administrator",
+ "module": "RCApp",
+ "name": "Return Material Series",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

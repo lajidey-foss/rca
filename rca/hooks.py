@@ -32,6 +32,7 @@ app_license = "MIT"
 
 # include js in doctype views
 # doctype_js = {"doctype" : "public/js/doctype.js"}
+doctype_js = {"Sales Invoice" : "rcapp/api/invoice.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
@@ -56,7 +57,7 @@ app_license = "MIT"
 # Installation
 # ------------
 
-# before_install = "rca.install.before_install"
+before_install = "rca.events.install.before_install"
 # after_install = "rca.install.after_install"
 
 # Uninstallation
@@ -95,13 +96,17 @@ app_license = "MIT"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-#	}
-# }
+doc_events = {
+	# "*": {
+	# 	"on_update": "method",
+	# 	"on_cancel": "method",
+	# 	"on_trash": "method"
+	# }
+
+	"Sales Invoice": {
+		"on_submit": "rca.rcapp.api.returnable.update_invoice"
+	}
+}
 
 # Scheduled Tasks
 # ---------------
@@ -178,4 +183,27 @@ user_data_fields = [
 # auth_hooks = [
 # 	"rca.auth.validate"
 # ]
+
+fixtures = [
+    {
+        "doctype": "Custom Field",
+        "filters": [
+            [
+                "name",
+                "in",
+                (
+                    "Sales Invoice-entry_type",
+                    "Sales Invoice Item-poi_ec",
+                    "Payment Entry-entry_type",
+                    "Item-is_rec",
+                    "Item-has_rec",
+                    "Item-main_hrec_tag",
+                    "Customer-is_reca",
+                    "Customer-rm_party",
+                ),
+            ]
+        ],
+    },
+]
+
 

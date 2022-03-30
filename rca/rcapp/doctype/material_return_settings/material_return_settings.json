@@ -1,0 +1,68 @@
+{
+ "actions": [],
+ "creation": "2022-02-18 03:04:04.224807",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "app_control_display",
+  "cuid",
+  "column_break_3",
+  "rca_status",
+  "apply_setting_section",
+  "auto_rec_posting"
+ ],
+ "fields": [
+  {
+   "fieldname": "app_control_display",
+   "fieldtype": "Section Break",
+   "label": "Display Panel"
+  },
+  {
+   "fieldname": "cuid",
+   "fieldtype": "Read Only",
+   "label": "System ID"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "apply_setting_section",
+   "fieldtype": "Section Break",
+   "label": "Apply Setting"
+  },
+  {
+   "default": "0",
+   "fieldname": "auto_rec_posting",
+   "fieldtype": "Check",
+   "label": "Auto REC Posting"
+  },
+  {
+   "fieldname": "rca_status",
+   "fieldtype": "Read Only",
+   "label": "App Status"
+  }
+ ],
+ "issingle": 1,
+ "links": [],
+ "modified": "2022-02-18 04:52:36.217187",
+ "modified_by": "Administrator",
+ "module": "RCApp",
+ "name": "Material Return Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}
