@@ -331,6 +331,10 @@ def validate_credit_limit (data, ec_nsum):
         """.format(cntrl_party,data.company), as_dict=1,
     )
     #(len(ec_remover_list) <= 0)
+    #if (ec_remover_list is None):
+    if(ctrl_find_limit is None):
+        return True
+        
     if(not len(ctrl_find_limit) > 0 )  :
         #print(f'\n\n\n\n inside valid : {len(ctrl_find_limit)} \n\n\n\n')
         return True
