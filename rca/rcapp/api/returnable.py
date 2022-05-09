@@ -52,10 +52,8 @@ def rma_main_submit_invoice (data):
 
     new_item_list = get_data_sales_voucher(data)
 
-    if(new_item_list == None ):
+    if(new_item_list is None ):
         return
-        #or new_item_list == []
-
     
     if (not len(new_item_list)> 0):
         return
@@ -230,6 +228,10 @@ def get_data_sales_voucher(data):
     ''' get the Ec of invoice items that has Ec'''
     ec_items = get_rec_items(voucher_items)
 
+    if(ec_items is None):
+        '''just added'''
+        return
+
     if (not len(ec_items) > 0):
         return
 
@@ -262,6 +264,10 @@ def get_data_sales_voucher(data):
                     "poi_ec":vch_item.poi_ec,
                 })
     ###remove paid EC
+    #if s is None
+    if (ec_remover_list is None):
+        return
+        
     if (not len(ec_remover_list) > 0):
         return
     
