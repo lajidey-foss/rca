@@ -52,11 +52,15 @@ def rma_main_submit_invoice (data):
 
     new_item_list = get_data_sales_voucher(data)
 
+    if(new_item_list == None ):
+        return
+        #or new_item_list == []
+
     
-    if (len(new_item_list)<= 0):
+    if (not len(new_item_list)> 0):
         return
    
-    print(f'\n\n\n\n Bug here len must be > 0 : {len(new_item_list)} \n\n\n\n')
+    #print(f'\n\n\n\n Bug here len must be > 0 : {len(new_item_list)} \n\n\n\n')
     for cal in new_item_list:
         nqty += cal['qty']
         nsum += cal['amount']
@@ -110,7 +114,11 @@ def rma_return_submit_invoice (data):
 
     new_item_list = get_data_sales_voucher(data)
 
-    if (len(new_item_list)<= 0):        
+    if(new_item_list == None ):
+        #or new_item_list == []
+        return
+
+    if (not len(new_item_list)> 0):        
         return
 
     for cal in new_item_list:
@@ -200,7 +208,7 @@ def get_rec_party(main_party):
         """.format(main_party),
         as_dict=1,
     )
-    if (len(pack) <= 0):
+    if (not len(pack) > 0):
         party_return = main_party
     else:
         party_return = pack[0]['name']  
@@ -222,7 +230,7 @@ def get_data_sales_voucher(data):
     ''' get the Ec of invoice items that has Ec'''
     ec_items = get_rec_items(voucher_items)
 
-    if (len(ec_items)<= 0):
+    if (not len(ec_items) > 0):
         return
 
     for x in ec_items:
@@ -254,7 +262,7 @@ def get_data_sales_voucher(data):
                     "poi_ec":vch_item.poi_ec,
                 })
     ###remove paid EC
-    if (len(ec_remover_list) <= 0):
+    if (not len(ec_remover_list) > 0):
         return
     
     #adjment start here to accommadate for returns too
@@ -317,7 +325,7 @@ def validate_credit_limit (data, ec_nsum):
         """.format(cntrl_party,data.company), as_dict=1,
     )
     #(len(ec_remover_list) <= 0)
-    if(len(ctrl_find_limit) <= 0 )  :
+    if(not len(ctrl_find_limit) > 0 )  :
         #print(f'\n\n\n\n inside valid : {len(ctrl_find_limit)} \n\n\n\n')
         return True
     

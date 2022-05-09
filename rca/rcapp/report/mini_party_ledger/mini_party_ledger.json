@@ -9,7 +9,7 @@
  "filters": [],
  "idx": 0,
  "is_standard": "Yes",
- "modified": "2022-02-19 07:13:54.716471",
+ "modified": "2022-05-08 20:29:26.514838",
  "modified_by": "Administrator",
  "module": "RCApp",
  "name": "Mini Party Ledger",
@@ -27,6 +27,9 @@
   },
   {
    "role": "Sales User"
+  },
+  {
+   "role": "All"
   }
  ]
 }
