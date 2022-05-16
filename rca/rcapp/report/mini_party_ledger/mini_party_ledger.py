@@ -39,12 +39,12 @@ def execute(filters=None):
 	#columns here
 	#attn_numbr as "Attendance:Link/Attendance:200"
 	columns = [
-		{'fieldname':'voucher_no','label':'Invoice No',"fieldtype": "Dynamic Link",'width':180,},
-		{'fieldname':'posting_date','label':'Invoice Date','width':80},
-		{'fieldname':'party','label':'Customer','width':150},
-		{'fieldname':'debit','label':_("Debit ({0})").format(currency),'width':120},
-		{'fieldname':'credit','label':_("Credit ({0})").format(currency),'width':120},
-		{'fieldname':'voucher_type','label':'voucher type','width':100},
+		{'fieldname':'voucher_no','label':'Invoice No',"fieldtype": "Dynamic Link",'width':200,},
+		{'fieldname':'posting_date','label':'Invoice Date','width':110},
+		{'fieldname':'party','label':'Customer','width':200},
+		{'fieldname':'debit','label':_("Debit "),"fieldtype": "Currency", "width": 130, "options": "currency"},
+		{'fieldname':'credit','label':_("Credit "),"fieldtype": "Currency", "width": 130, "options": "currency"},
+		{'fieldname':'voucher_type','label':'voucher type','width':110},
 		{'fieldname':'entry_type','label':'entry type','width':100}
 	]
 
@@ -52,13 +52,15 @@ def execute(filters=None):
 	#print('\n\n\n\n to time is: {filters.to_date} \n\n\n\n')
 	#print('\n\n\n\n from time is: {filters.from_date} \n\n\n\n')
 	data_befor = frappe.db.sql(
-		"""
+		"""		
 		SELECT * FROM (
-		SELECT  voucher_no, posting_date, party, debit, credit, voucher_type, docstatus,
+		SELECT  voucher_no, posting_date, party, debit, credit, voucher_type,
 		CASE WHEN voucher_type ='Sales Invoice' THEN (SELECT entry_type FROM `tabSales Invoice` WHERE name=voucher_no ) 
-		WHEN voucher_type ='Payment Entry' THEN (SELECT entry_type FROM `tabPayment Entry` WHERE name=voucher_no ) ELSE 'pend' END AS entry_type
+		WHEN voucher_type ='Payment Entry' THEN (SELECT entry_type FROM `tabPayment Entry` WHERE name=voucher_no ) ELSE 'pend' END AS entry_type,
+		CASE WHEN voucher_type ='Sales Invoice' THEN (SELECT docstatus FROM `tabSales Invoice` WHERE name=voucher_no ) 
+		WHEN voucher_type ='Payment Entry' THEN (SELECT docstatus FROM `tabPayment Entry` WHERE name=voucher_no ) ELSE 3 END AS g_docstatus
 		FROM `tabGL Entry` 
-		WHERE party_type='Customer' AND docstatus = 1 {} ) a WHERE docstatus = 1 {}
+		WHERE party_type='Customer' {0} ) G WHERE g_docstatus = 1 {1}
 		""".format( conditions, condition_type),as_dict=1,
 	)
 	
