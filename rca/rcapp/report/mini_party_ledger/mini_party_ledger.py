@@ -2,12 +2,21 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _, _dict
 from frappe.utils import cint, date_diff, flt, getdate
+from erpnext import get_company_currency, get_default_company
 
 def execute(filters=None):
 	#filter here
 	columns, data = [], []
 	conditions, condition_type="",""
+
+	if filters.get("company"):
+		currency = get_company_currency(filters["company"])
+	else:
+		company = get_default_company()
+		currency = get_company_currency(company)
+
 	
 	if filters.from_date and filters.to_date:
 		if filters.from_date==None:
@@ -28,14 +37,15 @@ def execute(filters=None):
 		condition_type = f"AND entry_type='{e_type}'"
 
 	#columns here
+	#attn_numbr as "Attendance:Link/Attendance:200"
 	columns = [
-		{'fieldname':'voucher_no','label':'Invoice No','width':'180'},
-		{'fieldname':'posting_date','label':'Invoice Date','width':'80'},
-		{'fieldname':'party','label':'Customer','width':'150'},
-		{'fieldname':'debit','label':'Debit','width':'120'},
-		{'fieldname':'credit','label':'Credit','width':'120'},
-		{'fieldname':'voucher_type','label':'voucher type','width':'100'},
-		{'fieldname':'entry_type','label':'entry type','width':'100'}
+		{'fieldname':'voucher_no','label':'Invoice No',"fieldtype": "Dynamic Link",'width':180,},
+		{'fieldname':'posting_date','label':'Invoice Date','width':80},
+		{'fieldname':'party','label':'Customer','width':150},
+		{'fieldname':'debit','label':_("Debit ({0})").format(currency),'width':120},
+		{'fieldname':'credit','label':_("Credit ({0})").format(currency),'width':120},
+		{'fieldname':'voucher_type','label':'voucher type','width':100},
+		{'fieldname':'entry_type','label':'entry type','width':100}
 	]
 
 	#query here
@@ -48,7 +58,7 @@ def execute(filters=None):
 		CASE WHEN voucher_type ='Sales Invoice' THEN (SELECT entry_type FROM `tabSales Invoice` WHERE name=voucher_no ) 
 		WHEN voucher_type ='Payment Entry' THEN (SELECT entry_type FROM `tabPayment Entry` WHERE name=voucher_no ) ELSE 'pend' END AS entry_type
 		FROM `tabGL Entry` 
-		WHERE party_type='Customer' {} ) a WHERE docstatus = 1 {}
+		WHERE party_type='Customer' AND docstatus = 1 {} ) a WHERE docstatus = 1 {}
 		""".format( conditions, condition_type),as_dict=1,
 	)
 	
