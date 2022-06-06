@@ -73,14 +73,14 @@
   {
    "hidden": 0,
    "is_query_report": 1,
-   "label": "Party Status",
-   "link_to": "Mini Party Ledger",
+   "label": "Party (Rcm) Status",
+   "link_to": "Party Ledger Rcm",
    "link_type": "Report",
    "onboard": 0,
    "type": "Link"
   }
  ],
- "modified": "2022-03-06 23:01:54.759361",
+ "modified": "2022-06-06 17:33:31.642445",
  "modified_by": "Administrator",
  "module": "RCApp",
  "name": "MRC",
@@ -103,14 +103,14 @@
   },
   {
    "doc_view": "List",
-   "label": "Party-ledger",
-   "link_to": "Mini Party Ledger",
+   "label": "Item-Ledger",
+   "link_to": "Mini Stock Balance",
    "type": "Report"
   },
   {
-   "doc_view": "List",
-   "label": "Item-Ledger",
-   "link_to": "Mini Stock Balance",
+   "doc_view": "",
+   "label": "Party (RCM) Ledger",
+   "link_to": "Party Ledger Rcm",
    "type": "Report"
   }
  ],

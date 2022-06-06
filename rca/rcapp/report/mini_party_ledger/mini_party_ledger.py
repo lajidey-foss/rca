@@ -24,20 +24,18 @@ def execute(filters=None):
 			#print('\n\n\n\n from time is: {filters.from_date} \n\n\n\n')
 		if filters.to_date==None:
 			filters.to_date = frappe.datetime.get_today()
-			#print('\n\n\n\n to time is: {filters.to_date} \n\n\n\n')
+			#print(f'\n\n\n\n to time is: {filters.to_date} \n\n\n\n')
 	conditions = "AND posting_date BETWEEN '"+ filters.from_date+"' AND '" + filters.to_date+"'"
 
 	if filters.get("party"):
 		c_party = filters.get("party")
 		conditions += f"AND party='{c_party}'"
-		#AND party='Tosin VSM'
 	
 	if filters.get("entry_type"):
 		e_type = filters.get("entry_type")
 		condition_type = f"AND entry_type='{e_type}'"
 
 	#columns here
-	#attn_numbr as "Attendance:Link/Attendance:200"
 	columns = [
 		{'fieldname':'voucher_no','label':'Invoice No',"fieldtype": "Dynamic Link",'width':200,},
 		{'fieldname':'posting_date','label':'Invoice Date','width':110},
@@ -49,18 +47,16 @@ def execute(filters=None):
 	]
 
 	#query here
-	#print('\n\n\n\n to time is: {filters.to_date} \n\n\n\n')
-	#print('\n\n\n\n from time is: {filters.from_date} \n\n\n\n')
 	data_befor = frappe.db.sql(
 		"""		
-		SELECT * FROM (
-		SELECT  voucher_no, posting_date, party, debit, credit, voucher_type,
+		SELECT voucher_no,posting_date,party,debit,credit,voucher_type,entry_type,g_docstatus FROM (
+		SELECT voucher_no, posting_date, party, debit, credit, voucher_type,party_type,
 		CASE WHEN voucher_type ='Sales Invoice' THEN (SELECT entry_type FROM `tabSales Invoice` WHERE name=voucher_no ) 
-		WHEN voucher_type ='Payment Entry' THEN (SELECT entry_type FROM `tabPayment Entry` WHERE name=voucher_no ) ELSE 'pend' END AS entry_type,
+		WHEN voucher_type ='Payment Entry' THEN (SELECT entry_type FROM `tabPayment Entry` WHERE name=voucher_no ) ELSE 'MAIN JVR' END AS entry_type,
 		CASE WHEN voucher_type ='Sales Invoice' THEN (SELECT docstatus FROM `tabSales Invoice` WHERE name=voucher_no ) 
 		WHEN voucher_type ='Payment Entry' THEN (SELECT docstatus FROM `tabPayment Entry` WHERE name=voucher_no ) ELSE 3 END AS g_docstatus
 		FROM `tabGL Entry` 
-		WHERE party_type='Customer' {0} ) G WHERE g_docstatus = 1 {1}
+		) G WHERE g_docstatus = 1 AND party_type='Customer' {0} {1}
 		""".format( conditions, condition_type),as_dict=1,
 	)
 	
