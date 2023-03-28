@@ -70,7 +70,7 @@ def rma_main_submit_invoice (data):
         "customer":party_code, "naming_series" : vch_series, 
         "set_posting_time":1, "due_date": add_days(data.posting_date, 1), "posting_date": data.posting_date,
         "update_stock":1, "set_warehouse": data.set_warehouse, "set_target_warehouse": data.set_target_warehouse,
-        "items": new_item_list,
+        "items": new_item_list,"rec_for": data.name,
     })
 
     #cntrl_party = get_rec_party(data.customer)
@@ -179,6 +179,7 @@ def rma_return_submit_invoice (data):
         "set_posting_time":1, "posting_date": data.posting_date,
         "is_return":1, "update_stock":1, "set_warehouse": data.set_warehouse, 
         "set_target_warehouse": data.set_target_warehouse, "items": new_item_list,
+        "rec_for": data.name,
     })
 
     invoice_doc.flags.ignore_permissions = True
