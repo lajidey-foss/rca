@@ -95,9 +95,11 @@ def validate_limit ():
   valid_period = parsed["rec_valid_till"]
   module_status = parsed["rca_status"]
   diff = date_diff(valid_period, today())
-  if not module_status == 'freemium' and diff > 0 :
+  if module_status == 'premium' :
       return 'PREMIUM_PACK'
 
+  elif not module_status == 'freemium' and diff > 0 :
+      return 'PREMIUM_PACK'
   elif not module_status == 'freemium' and diff < 0 :
       return 'FREEMIUM_PACK'
   else:
@@ -189,7 +191,9 @@ def rma_return_submit_invoice (data):
     invoice_doc.set_missing_values()
 
     invoice_doc.save()
-    invoice_doc.submit()  
+    invoice_doc.submit()
+    
+
 
 def get_rec_party(main_party):
     """ get list of rec party from doc"""  
