@@ -200,6 +200,7 @@ fixtures = [
                     "Item-main_hrec_tag",
                     "Customer-is_reca",
                     "Customer-rm_party",
+					"Sales Invoice-rec_for",
                 ),
             ]
         ],
