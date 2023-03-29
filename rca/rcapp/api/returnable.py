@@ -42,13 +42,12 @@ def update_invoice(doc, method):
 #### Direct sales
 def rma_main_submit_invoice (data):
     """begin here""" 
-    #print('\n\n\n\n inside main-submit \n\n\n\n')      
+    #print('\n\n inside main-submit \n\n')      
     vch_series = frappe.db.get_single_value('Return Material Series', 'sales_out_series')
-    #print(f'\n\n\n\n inside main-submit series: {vch_series} \n\n\n\n') 
     nqty = 0
     nsum = 0
     party_code = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer)
-    #print(f'\n\n\n\n inside main-submit party: {party_code} \n\n\n\n')
+    #print(f'\n\n main-submit party: {party_code} \n\n')
 
     new_item_list = get_data_sales_voucher(data)
 
@@ -58,7 +57,7 @@ def rma_main_submit_invoice (data):
     if (not len(new_item_list)> 0):
         return
    
-    #print(f'\n\n\n\n Bug here len must be > 0 : {len(new_item_list)} \n\n\n\n')
+    #print(f'\n\n Bug here len must be > 0 : {new_item_list} \n\n')
     for cal in new_item_list:
         nqty += cal['qty']
         nsum += cal['amount']
@@ -87,6 +86,11 @@ def rma_main_submit_invoice (data):
 
     invoice_doc.save()
     invoice_doc.submit()
+
+def make_rma_main (data):
+    """ doc_item_record=['{}'.format(r.code) for r in data.items]
+    party_record = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer) """
+    
 
 def validate_limit ():
   """ work on to get limit """
