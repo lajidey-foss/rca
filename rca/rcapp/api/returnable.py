@@ -90,6 +90,7 @@ def rma_main_submit_invoice (data):
 def make_rma_main (data):
     """ doc_item_record=['{}'.format(r.code) for r in data.items]
     party_record = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer) """
+    doc_item_record=['{}'.format(r.code) for r in data.items]
     
 
 def validate_limit ():
@@ -235,7 +236,7 @@ def get_data_sales_voucher(data):
     item_ec_list = []
     
     ''' get the Ec of invoice items that has Ec'''
-    ec_items = get_rec_items(voucher_items)
+    ec_items = get_rec_items(voucher_items[: -1])
 
     if(ec_items is None):
         '''just added'''
@@ -289,6 +290,57 @@ def get_data_sales_voucher(data):
     
     return ec_remover_list
 
+def get_doc_items(data):
+    """"""
+    voucher_items_record=['{}'.format(r.item_code) for r in data.items]
+
+    link_to_items  =  get_rec_items(voucher_items_record)
+    
+    if(link_to_items is None  or link_to_items == []):
+        return
+    
+
+    set_items_row = []
+    poi_ec_list=[]
+    for rcord in data.items:
+        for itm in link_to_items:
+            if rcord.item_code == itm.main_hrec_tag:
+                set_items_row.append({
+                    "item_code": itm.code,
+                    "qty": rcord.qty,
+                    "rate": itm.rate,
+                    "uom": rcord.uom,
+                    "amount": rcord.qty * itm.rate,
+                    "conversion_factor": rcord.conversion_factor,
+                    "poi_ec":rcord.poi_ec,
+                })
+                #break
+            else:
+                """"""
+                if(rcord.poi_ec == 1):
+                    poi_ec_list.append({
+                        "item_code": rcord.item_code,
+                        "qty": rcord.qty,
+                        "rate": rcord.rate,
+                        "uom": rcord.uom,
+                        "amount": rcord.qty * rcord.rate,
+                        "conversion_factor": rcord.conversion_factor,
+                        "poi_ec":rcord.poi_ec,
+                    })
+    #if(link_to_items is None  or link_to_items == []):
+    if(set_items_row is None  or set_items_row == []):
+        return
+    
+    #weed out paid  on doc returnable case
+    for pl in poi_ec_list:
+        for dr in set_items_row:
+            if dr.item_code == pl.item_code:
+                dr.qty = dr.qty - pl.qty
+                dr.amount = dr.qty * dr.rate
+    
+    return set_items_row
+
+
 def get_rec_items(main_items):
     """ list of rec from voucher items list"""
     # also check if stock is maintain in item
@@ -309,7 +361,7 @@ def get_rec_items(main_items):
             AND is_rec = 1
             AND main_hrec_tag IN ({0})
         """.format(
-            main_items[: -1]
+            main_items
         ),
         as_dict=1,
     )
