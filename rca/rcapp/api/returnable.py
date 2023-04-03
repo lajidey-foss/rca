@@ -10,8 +10,6 @@ from erpnext.accounts.utils import get_balance_on
 from frappe.utils.data import add_days, date_diff, today
 
 
-#GLOBAL_MAIN_SERIES = 'MM-VCH-.YYYY.-'
-#GLOBAL_RETURN_SERIES = 'RM-RET-.YYYY.-'
 # work on js to restrict circular for items ec and party ec
 # only item marked as returnable can be available for select
 # also party can't pick itself and only customer can be available for select
@@ -37,60 +35,43 @@ def update_invoice(doc, method):
         else:
             pass
     else:
-        rma_main_submit_invoice (doc)
+        make_rma_main(doc)
 
-#### Direct sales
-def rma_main_submit_invoice (data):
-    """begin here""" 
-    #print('\n\n inside main-submit \n\n')      
-    vch_series = frappe.db.get_single_value('Return Material Series', 'sales_out_series')
-    nqty = 0
-    nsum = 0
-    party_code = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer)
-    #print(f'\n\n main-submit party: {party_code} \n\n')
-
-    new_item_list = get_data_sales_voucher(data)
-
-    if(new_item_list is None ):
-        return
-    
-    if (not len(new_item_list)> 0):
-        return
-   
-    #print(f'\n\n Bug here len must be > 0 : {new_item_list} \n\n')
-    for cal in new_item_list:
-        nqty += cal['qty']
-        nsum += cal['amount']
-    
-    invoice_doc = frappe.new_doc("Sales Invoice")
-    invoice_doc.update({
-        "is_pos": 0, "doc.ignore_pricing_rule" : 1, "total" : nsum, "total_qty": nqty,
-        "company": data.company, "currency": data.currency ,
-        "customer":party_code, "naming_series" : vch_series, 
-        "set_posting_time":1, "due_date": add_days(data.posting_date, 1), "posting_date": data.posting_date,
-        "update_stock":1, "set_warehouse": data.set_warehouse, "set_target_warehouse": data.set_target_warehouse,
-        "items": new_item_list,"rec_for": data.name,
-    })
-
-    #cntrl_party = get_rec_party(data.customer)
-    # check if empties makes credit limit to exceeded if single account 
-    # party_code = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer)
-    if not validate_credit_limit(data, nsum):
-        return
-    
-    invoice_doc.flags.ignore_permissions = True
-    frappe.flags.ignore_account_permission = True
-    invoice_doc.ignore_pricing_rule = 1
-    invoice_doc.entry_type = GLOBAL_RETURN_ENTRY
-    invoice_doc.set_missing_values()
-
-    invoice_doc.save()
-    invoice_doc.submit()
+# Direct sales
 
 def make_rma_main (data):
-    """ doc_item_record=['{}'.format(r.code) for r in data.items]
-    party_record = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer) """
-    doc_item_record=['{}'.format(r.code) for r in data.items]
+    """ lk """
+    vch_series = frappe.db.get_single_value('Return Material Series', 'sales_out_series')
+    doc_item_record= get_doc_items(data)
+    party_record = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer)
+
+    total_qty,total_amount = 0.0,0.0
+
+    if(doc_item_record is None  or doc_item_record == []):
+        return
+
+    for ntotal in doc_item_record:
+        total_qty += ntotal['qty']
+        total_amount += ntotal['amount']
+    
+    si_doc = frappe.new_doc("Sales Invoice")
+    si_doc.update({
+        "is_pos": 0, "company": data.company, "currency": data.currency ,
+        "customer":party_record, "naming_series" : vch_series, 
+        "set_posting_time":1, "due_date": add_days(data.posting_date, 1), "posting_date": data.posting_date,
+        "update_stock":data.update_stock, "set_warehouse": data.set_warehouse, "set_target_warehouse": data.set_target_warehouse,
+        "items": doc_item_record,"rec_for": data.name,"entry_type" :GLOBAL_RETURN_ENTRY
+    })
+
+    if not validate_credit_limit(data, total_amount):
+        return
+    
+    si_doc.flags.ignore_permissions = True
+    frappe.flags.ignore_account_permission = True
+    si_doc.set_missing_values()
+
+    si_doc.save()
+    si_doc.submit()
     
 
 def validate_limit ():
@@ -294,31 +275,42 @@ def get_doc_items(data):
     """"""
     voucher_items_record=['{}'.format(r.item_code) for r in data.items]
 
-    link_to_items  =  get_rec_items(voucher_items_record)
-    
+    link_to_items  =  get_rec_item(voucher_items_record)
+        
     if(link_to_items is None  or link_to_items == []):
         return
-    
 
     set_items_row = []
     poi_ec_list=[]
+
     for rcord in data.items:
-        for itm in link_to_items:
+        for itm in link_to_items:  
             if rcord.item_code == itm.main_hrec_tag:
                 set_items_row.append({
-                    "item_code": itm.code,
+                    "item_code": itm.name,
                     "qty": rcord.qty,
-                    "rate": itm.rate,
+                    "rate": itm.standard_rate,
                     "uom": rcord.uom,
-                    "amount": rcord.qty * itm.rate,
+                    "amount": rcord.qty * itm.standard_rate,
                     "conversion_factor": rcord.conversion_factor,
                     "poi_ec":rcord.poi_ec,
                 })
-                #break
+                
             else:
-                """"""
-                if(rcord.poi_ec == 1):
+                if (rcord.item_code == itm.name):
                     poi_ec_list.append({
+                        "item_code": itm.name,
+                        "qty": rcord.qty,
+                        "rate": itm.standard_rate,
+                        "uom": rcord.uom,
+                        "amount": rcord.qty * itm.standard_rate,
+                        "conversion_factor": rcord.conversion_factor,
+                        "poi_ec":rcord.poi_ec,
+                    })
+                    
+                if(rcord.poi_ec == 1):
+                    print(f'\n === poi_ec : 1 === \n')
+                    """ poi_ec_list.append({
                         "item_code": rcord.item_code,
                         "qty": rcord.qty,
                         "rate": rcord.rate,
@@ -326,20 +318,37 @@ def get_doc_items(data):
                         "amount": rcord.qty * rcord.rate,
                         "conversion_factor": rcord.conversion_factor,
                         "poi_ec":rcord.poi_ec,
-                    })
-    #if(link_to_items is None  or link_to_items == []):
+                    }) """
+                    #print('*********************************************')
+                #print(f'\n poi : {poi_ec_list} \n')
+
     if(set_items_row is None  or set_items_row == []):
         return
     
-    #weed out paid  on doc returnable case
-    for pl in poi_ec_list:
-        for dr in set_items_row:
-            if dr.item_code == pl.item_code:
-                dr.qty = dr.qty - pl.qty
-                dr.amount = dr.qty * dr.rate
-    
+    # sort out paid on doc returnable case
+    if(not poi_ec_list is None):
+        for pl in poi_ec_list:
+            for dr in set_items_row:
+                if dr['item_code'] == pl['item_code']:
+                    if pl["qty"] > dr["qty"] :
+                        msg = f"<div>Warning, Quantity for RM: {dr['item_code']} exceeding by {pl['qty'] - dr['qty']} </div>"        
+                        frappe.throw(_(msg))
+                    zero_qty_checker = dr['qty'] - pl['qty']
+                    if zero_qty_checker == 0 :
+                        set_items_row.remove(dr)
+                    else:
+                        dr['qty'] = zero_qty_checker
+                        
+            
     return set_items_row
 
+
+def get_rec_item(main_item):
+    """"""
+    rc_item = frappe.db.get_list("Item", fields="name,item_name,standard_rate,main_hrec_tag", filters={
+        "disabled": 0,"is_sales_item": 1,"is_fixed_asset": 0,"is_rec": 1,"main_hrec_tag": ["in", main_item]
+    })
+    return rc_item
 
 def get_rec_items(main_items):
     """ list of rec from voucher items list"""
@@ -366,8 +375,7 @@ def get_rec_items(main_items):
         as_dict=1,
     )
 
-  
-
+    
 
 def validate_credit_limit (data, ec_nsum):
     '''validate_credit_limit (data, ec_sum)

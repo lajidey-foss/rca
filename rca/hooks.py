@@ -101,10 +101,14 @@ doc_events = {
 	# 	"on_update": "method",
 	# 	"on_cancel": "method",
 	# 	"on_trash": "method"
+	#	
+	#	"after_insert": "rca method"
 	# }
+	#"on_submit": "rca.rcapp.api.returnable.update_invoice"
 
 	"Sales Invoice": {
 		"on_submit": "rca.rcapp.api.returnable.update_invoice"
+		
 	}
 }
 
