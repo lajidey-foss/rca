@@ -31,7 +31,8 @@ def update_invoice(doc, method):
         if validate_limit() == 'FREEMIUM_PACK' :
             pass
         elif validate_limit() == 'PREMIUM_PACK' :
-            rma_return_submit_invoice(doc)
+            #rma_return_submit_invoice(doc)
+            make_rma_return(doc)
         else:
             pass
     else:
@@ -165,7 +166,7 @@ def rma_return_submit_invoice (data):
         "company": data.company, "currency": data.currency ,
         "customer":party_code, "naming_series" : vch_series, 
         "set_posting_time":1, "posting_date": data.posting_date,
-        "is_return":1, "update_stock":1, "set_warehouse": data.set_warehouse, 
+        "update_stock":1, "set_warehouse": data.set_warehouse, 
         "set_target_warehouse": data.set_target_warehouse, "items": new_item_list,
         "rec_for": data.name,
     })
@@ -178,7 +179,40 @@ def rma_return_submit_invoice (data):
 
     invoice_doc.save()
     invoice_doc.submit()
+
+def make_rma_return (data):
+    """"""   
+    vch_series = frappe.db.get_single_value('Return Material Series', 'sales_in_series')
+    doc_item_record= get_doc_items(data)
+    party_record = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer)
+        
+
+    if(doc_item_record is None  or doc_item_record == []):
+        return
     
+    total_qty,total_amount = 0.0,0.0
+
+    for ntotal in doc_item_record:
+        total_qty -= ntotal['qty']
+        total_amount -= ntotal['amount']
+    
+    si_doc = frappe.new_doc("Sales Invoice")
+    si_doc.update({
+        "is_pos": 0, "company": data.company, "currency": data.currency ,
+        "customer":party_record, "naming_series" : vch_series, 
+        "set_posting_time":1, "posting_date": data.posting_date,
+        "update_stock":data.update_stock, "set_warehouse": data.set_warehouse, 
+        "set_target_warehouse": data.set_target_warehouse, "is_return":1,
+        "items": doc_item_record,"rec_for": data.name,"entry_type" :GLOBAL_RETURN_ENTRY
+    })
+    
+    si_doc.flags.ignore_permissions = True
+    frappe.flags.ignore_account_permission = True
+    si_doc.set_missing_values()
+
+    si_doc.save()
+    si_doc.submit()
+
 
 
 def get_rec_party(main_party):
@@ -204,7 +238,7 @@ def get_rec_party(main_party):
     
     return party_return
 
-def get_data_sales_voucher(data):
+def get_data_sales_voucher(data): 
     ''' get next'''
     ec_remover_list = []
     voucher_items = ""
