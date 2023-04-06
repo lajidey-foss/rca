@@ -92,93 +92,6 @@ def validate_limit ():
   else:
     return 'FREEMIUM_PACK'
 
-def rma_return_submit_invoice (data):
-    """begin here"""
-    vch_series = frappe.db.get_single_value('Return Material Series', 'sales_in_series')
-    voucher_items = ""
-    nqty, nsum = 0,0
-    party_code = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer)
-
-    new_item_list = get_data_sales_voucher(data)
-
-    if(new_item_list == None ):
-        #or new_item_list == []
-        return
-
-    if (not len(new_item_list)> 0):        
-        return
-
-    for cal in new_item_list:
-        nqty -= cal['qty']
-        nsum -= cal['amount']
-    
-    # delete start
-
-    """ for x in data.items:
-        voucher_items +="\'"+ x.item_code+"\',"
-    ec_list = []
-    replace_ec_list = []
-    item_ec_list = []
-    ec_remover_list = []
-    
-    items_data = get_rec_items(voucher_items)
-    
-    if (len(items_data) <= 0):
-        return
-
-    for x in items_data:
-        ec_list.append(x.main_hrec_tag)
-        replace_ec_list.append({"tag":x.main_hrec_tag, "code":x.item_code, "rate":x.standard_rate})
-    indexitm = 0
-    for vch_item in data.items:
-        if vch_item.item_code in ec_list:
-            indexitm = ec_list.index(vch_item.item_code)
-            ec_remover_list.append({
-                "item_code": replace_ec_list[indexitm]["code"],
-                "qty": vch_item.qty,
-                "rate": replace_ec_list[indexitm]["rate"],
-                "uom": vch_item.uom,
-                "amount": vch_item.qty * replace_ec_list[indexitm]["rate"],
-                "conversion_factor": vch_item.conversion_factor,
-                "poi_ec":vch_item.poi_ec,
-            })
-        else:
-            if(vch_item.poi_ec == 1):
-                item_ec_list.append({
-                    "item_code": vch_item.item_code,
-                    "qty": vch_item.qty,
-                    "rate": vch_item.rate,
-                    "uom": vch_item.uom,
-                    "amount": vch_item.qty * vch_item.rate,
-                    "conversion_factor": vch_item.conversion_factor,
-                    "poi_ec":vch_item.poi_ec,
-                })
-
-    if (len(ec_remover_list) <= 0):
-        return
-    """
-    # use multiply (x* -1)
-    # delete ends
-    
-    invoice_doc = frappe.new_doc("Sales Invoice")
-    invoice_doc.update({
-        "is_pos": 0, "doc.ignore_pricing_rule" : 1, "total" : nsum, "total_qty": nqty,
-        "company": data.company, "currency": data.currency ,
-        "customer":party_code, "naming_series" : vch_series, 
-        "set_posting_time":1, "posting_date": data.posting_date,
-        "update_stock":1, "set_warehouse": data.set_warehouse, 
-        "set_target_warehouse": data.set_target_warehouse, "items": new_item_list,
-        "rec_for": data.name,
-    })
-
-    invoice_doc.flags.ignore_permissions = True
-    frappe.flags.ignore_account_permission = True
-    invoice_doc.ignore_pricing_rule = 1
-    invoice_doc.entry_type = GLOBAL_RETURN_ENTRY
-    invoice_doc.set_missing_values()
-
-    invoice_doc.save()
-    invoice_doc.submit()
 
 def make_rma_return (data):
     """"""   
@@ -238,72 +151,6 @@ def get_rec_party(main_party):
     
     return party_return
 
-def get_data_sales_voucher(data): 
-    ''' get next'''
-    ec_remover_list = []
-    voucher_items = ""
-    doc_items = data.items
-    for x in doc_items:
-        voucher_items +="\'"+ x.item_code+"\',"
-    
-    ec_list = []
-    replace_ec_list = []
-    item_ec_list = []
-    
-    ''' get the Ec of invoice items that has Ec'''
-    ec_items = get_rec_items(voucher_items[: -1])
-
-    if(ec_items is None):
-        '''just added'''
-        return
-
-    if (not len(ec_items) > 0):
-        return
-
-    for x in ec_items:
-        ec_list.append(x.main_hrec_tag)
-        replace_ec_list.append({"tag":x.main_hrec_tag, "code":x.item_code, "rate":x.standard_rate})
-    '''modified invoice item list'''
-    indexitm = 0
-    for vch_item in doc_items:
-        if vch_item.item_code in ec_list:
-            indexitm = ec_list.index(vch_item.item_code)
-            ec_remover_list.append({
-                "item_code": replace_ec_list[indexitm]["code"],
-                "qty": vch_item.qty,
-                "rate": replace_ec_list[indexitm]["rate"],
-                "uom": vch_item.uom,
-                "amount": vch_item.qty * replace_ec_list[indexitm]["rate"],
-                "conversion_factor": vch_item.conversion_factor,
-                "poi_ec":vch_item.poi_ec,
-            })
-        else:
-            if(vch_item.poi_ec == 1):
-                item_ec_list.append({
-                    "item_code": vch_item.item_code,
-                    "qty": vch_item.qty,
-                    "rate": vch_item.rate,
-                    "uom": vch_item.uom,
-                    "amount": vch_item.qty * vch_item.rate,
-                    "conversion_factor": vch_item.conversion_factor,
-                    "poi_ec":vch_item.poi_ec,
-                })
-    ###remove paid EC
-    #if s is None
-    if (ec_remover_list is None):
-        return
-        
-    if (not len(ec_remover_list) > 0):
-        return
-    
-    #adjment start here to accommadate for returns too
-    for rc in item_ec_list:
-        for d in ec_remover_list:
-            if d['item_code'] == rc['item_code']:
-                d['qty'] = d['qty'] - rc['qty']
-                d['amount'] = d['qty'] * d['rate']
-    
-    return ec_remover_list
 
 def get_doc_items(data):
     """"""
@@ -376,38 +223,12 @@ def get_doc_items(data):
             
     return set_items_row
 
-
 def get_rec_item(main_item):
     """"""
     rc_item = frappe.db.get_list("Item", fields="name,item_name,standard_rate,main_hrec_tag", filters={
         "disabled": 0,"is_sales_item": 1,"is_fixed_asset": 0,"is_rec": 1,"main_hrec_tag": ["in", main_item]
     })
     return rc_item
-
-def get_rec_items(main_items):
-    """ list of rec from voucher items list"""
-    # also check if stock is maintain in item
-    return frappe.db.sql(
-        """ 
-        SELECT
-            name AS item_code,
-            item_name,
-            idx as idx,
-            standard_rate,
-            main_hrec_tag
-        FROM
-            `tabItem`
-        WHERE
-            disabled = 0
-            AND is_sales_item = 1
-            AND is_fixed_asset = 0
-            AND is_rec = 1
-            AND main_hrec_tag IN ({0})
-        """.format(
-            main_items
-        ),
-        as_dict=1,
-    )
 
     
 
