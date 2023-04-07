@@ -16,7 +16,7 @@ from frappe.utils.data import add_days, date_diff, today
 GLOBAL_MAIN_ENTRY = 'MAIN VCH'
 GLOBAL_RETURN_ENTRY = 'REC ENTRY'
 
-@frappe.whitelist()
+
 def update_invoice(doc, method):
     
     if not frappe.db.get_single_value('Material Return Settings', 'auto_rec_posting'):
@@ -37,8 +37,6 @@ def update_invoice(doc, method):
             pass
     else:
         make_rma_main(doc)
-
-# Direct sales
 
 def make_rma_main (data):
     """ lk """
@@ -280,3 +278,7 @@ def validate_credit_limit (data, ec_nsum):
         frappe.throw(_(msg))
     
     return True
+
+def on_main_cancel(doc, method):
+    
+    frappe.db.set_value('Sales Invoice',{"rec_for":doc.name},'docstatus',2)

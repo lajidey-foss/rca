@@ -107,7 +107,8 @@ doc_events = {
 	#"on_submit": "rca.rcapp.api.returnable.update_invoice"
 
 	"Sales Invoice": {
-		"on_submit": "rca.rcapp.api.returnable.update_invoice"
+		"on_submit": "rca.rcapp.api.returnable.update_invoice",
+		"on_cancel": "rca.rcapp.api.returnable.on_main_cancel"
 		
 	}
 }
