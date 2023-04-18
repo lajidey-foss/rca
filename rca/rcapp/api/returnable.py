@@ -129,23 +129,15 @@ def make_rma_return (data):
 def get_rec_party(main_party):
     """ get list of rec party from doc"""  
     party_return = ""  
-    pack = frappe.db.sql(
-        """
-        SELECT 
-            name, 
-            is_reca, 
-            idx, 
-            rm_party  
-        FROM `tabCustomer`
-        WHERE 
-            disabled = 0 AND rm_party IN ('{0}')
-        """.format(main_party),
-        as_dict=1,
-    )
-    if (not len(pack) > 0):
+    
+    party_rm_checker = frappe.db.get_list("Customer", fields="name,is_reca,rm_party", filters={
+        "disabled": 0,"rm_party": ["in", main_party]
+    })
+   
+    if (party_rm_checker is None or party_rm_checker == []):
         party_return = main_party
     else:
-        party_return = pack[0]['name']  
+        party_return = party_rm_checker[0]['name']  
     
     return party_return
 
