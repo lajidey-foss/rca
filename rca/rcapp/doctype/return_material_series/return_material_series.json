@@ -17,7 +17,7 @@
    "label": "Series Panel"
   },
   {
-   "description": " \"MM-VCH-.YYYY.-\"",
+   "description": " \"VCH-.YYYY.-\"",
    "fieldname": "sales_out_series",
    "fieldtype": "Data",
    "label": "Sales Out Series"
@@ -27,7 +27,7 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "\"MM-RET-.YYYY.-\"",
+   "description": "\"RET-.YYYY.-\"",
    "fieldname": "sales_in_series",
    "fieldtype": "Data",
    "label": "Sales In Series"
@@ -35,7 +35,7 @@
  ],
  "issingle": 1,
  "links": [],
- "modified": "2022-02-19 04:57:34.494763",
+ "modified": "2023-04-21 21:41:31.552048",
  "modified_by": "Administrator",
  "module": "RCApp",
  "name": "Return Material Series",
