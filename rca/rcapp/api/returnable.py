@@ -39,8 +39,9 @@ def update_invoice(doc, method):
         make_rma_main(doc)
 
 def make_rma_main (data):
-    """ lk """
-    vch_series = frappe.db.get_single_value('Return Material Series', 'sales_out_series')
+    """ vch_series =  {{abr}}-RET-.YYYY.-"""
+    coy = frappe.get_doc('Company', data.company)
+    vch_series = coy.abbr+'-'+frappe.db.get_single_value('Return Material Series', 'sales_out_series')
     doc_item_record= get_doc_items(data)
     party_record = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer)
 
@@ -93,7 +94,8 @@ def validate_limit ():
 
 def make_rma_return (data):
     """"""   
-    vch_series = frappe.db.get_single_value('Return Material Series', 'sales_in_series')
+    coy = frappe.get_doc('Company', data.company)
+    vch_series = coy.abbr+'-'+frappe.db.get_single_value('Return Material Series', 'sales_in_series')
     doc_item_record= get_doc_items(data)
     party_record = data.customer if validate_limit() != 'PREMIUM_PACK' else get_rec_party(data.customer)
         
